@@ -1,0 +1,14 @@
+{
+  "name": "ruliad",
+  "owner": { "name": "SpotRunner", "url": "https://theruliad.ai" },
+  "description": "Ruliad TV and CTV ad production for Claude: the production MCP connection plus the ruliad-tv-production skill.",
+  "plugins": [
+    {
+      "name": "ruliad",
+      "source": "./ruliad",
+      "description": "Create, revise, edit and export TV or CTV commercials in your Ruliad production workspace through Claude.",
+      "category": "creativity",
+      "tags": ["advertising", "video", "television", "ctv", "mcp"]
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "ruliad": {
+      "type": "http",
+      "url": "https://api.theruliad.ai/mcp"
+    }
+  }
+}
