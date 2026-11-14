@@ -1,6 +1,6 @@
 # Ruliad for Claude
 
-Ruliad's TV and CTV ad production connection for Claude users. It packages the production MCP server (`https://api.theruliad.ai/mcp`, OAuth 2.1 with PKCE and dynamic client registration) together with two skills: `ruliad-tv-production` (the MCP route) and `ruliad-browser-operator` (operating the Ruliad app through the Claude Code desktop Browser pane or the Claude in Chrome extension, for the parts of the product the MCP catalog does not expose). The public procedure both skills follow is https://theruliad.ai/agent-guides/claude-v1.html. The same backend and account model serve the ChatGPT plugin; this package adds Claude-specific onboarding only.
+Ruliad's TV and CTV ad production connection for Claude users. It packages the production MCP server (`https://api.theruliad.ai/mcp`, OAuth 2.1 with PKCE and dynamic client registration) together with three skills: `ruliad-tv-production` (the MCP route, including Creative IQ), `ruliad-media-planning` (media plans and the customer's own Vibe account) and `ruliad-browser-operator` (operating the Ruliad app through the Claude Code desktop Browser pane or the Claude in Chrome extension, for the parts of the product the MCP catalog does not expose). The public procedure both skills follow is https://theruliad.ai/agent-guides/claude-v1.html. The same backend and account model serve the ChatGPT plugin; this package adds Claude-specific onboarding only.
 
 ## Surfaces
 
@@ -12,35 +12,30 @@ Ruliad's TV and CTV ad production connection for Claude users. It packages the p
 
 ## Install in Claude Code
 
+From a checkout of this repository:
+
 ```bash
-claude plugin marketplace add spotrunner1/ruliad-claude-plugin
+claude plugin marketplace add /path/to/Ruliad/plugins/ruliad-claude
 claude plugin install ruliad@ruliad
 ```
 
-Or from a local checkout of this repository:
-
-```bash
-claude plugin marketplace add /path/to/ruliad-claude-plugin
-claude plugin install ruliad@ruliad
-```
-
-Then start Claude Code, run `/mcp`, choose `ruliad` and complete the Ruliad sign-in and consent in the browser. Tools appear as `mcp__plugin_ruliad_ruliad__<tool>`; the skills are `/ruliad:ruliad-tv-production` and `/ruliad:ruliad-browser-operator`.
+Then start Claude Code, run `/mcp`, choose `ruliad` and complete the Ruliad sign-in and consent in the browser. Tools appear as `mcp__plugin_ruliad_ruliad__<tool>`; the skills are `/ruliad:ruliad-tv-production`, `/ruliad:ruliad-media-planning` and `/ruliad:ruliad-browser-operator`.
 
 To try it without installing:
 
 ```bash
-claude --plugin-dir /path/to/ruliad-claude-plugin/ruliad
+claude --plugin-dir /path/to/Ruliad/plugins/ruliad-claude/ruliad
 ```
 
 Validate after edits:
 
 ```bash
-claude plugin validate /path/to/ruliad-claude-plugin --strict
+claude plugin validate /path/to/Ruliad/plugins/ruliad-claude --strict
 ```
 
 ## Sign-in and permissions
 
-Claude registers itself with the Ruliad authorization server, opens the Ruliad consent page in your browser, and receives a short-lived access token bound to your SpotRunner account, your workspaces and the scopes you approve: `connection:read`, `projects:read`, `projects:write`, `production:write`, `exports:write`. There is no payment or billing scope. Revoking the connection in Claude (`/mcp` → `ruliad` → clear authentication, or removing the connector) invalidates the tokens; signing out of Ruliad or changing your password revokes every connection.
+Claude registers itself with the Ruliad authorization server, opens the Ruliad consent page in your browser, and receives a short-lived access token bound to your Ruliad account, your workspaces and the scopes you approve: `connection:read`, `projects:read`, `projects:write`, `production:write`, `exports:write`. There is no payment or billing scope. Revoking the connection in Claude (`/mcp` → `ruliad` → clear authentication, or removing the connector) invalidates the tokens; signing out of Ruliad or changing your password revokes every connection.
 
 Claude Code uses a loopback callback (`http://localhost:<port>/callback`); Claude web and desktop use `https://claude.ai/api/mcp/auth_callback`. Both are accepted only as exact, PKCE-bound callbacks.
 
@@ -49,11 +44,14 @@ Claude Code uses a loopback callback (`http://localhost:<port>/callback`); Claud
 - Reads of workspaces, projects, references, production jobs and export status.
 - Briefs, scene plans and conflict-checked timeline edits (trim, move, volume, mute, text, titles, clip removal).
 - Production and targeted revisions when `get_production_readiness` reports `productionAvailable: true`. Creation is free; the server enforces Ruliad's own execution limits.
-- Exports render a private master; final playback or download requires the project's delivery access. Claude never purchases an unlock or charges a card.
-- Chat attachments are not forwarded to Ruliad. Add images in the Ruliad project, then register them. See the skill for details.
+- Creating, editing and the watermarked preview are free. Exports render a private full-quality master; the customer unlocks the clean master per ad in Ruliad (per-ad pack or subscription), and Claude gives them the unlock link. Claude never charges a card.
+- Creative IQ (free): analyze a Ruliad export or a public video URL, read the report, run clearly labelled synthetic audiences, and get a confirm-first Fix with Ruliad plan (`analyze_ad_creative`, `get_ad_creative_report`, `run_ad_synthetic_audience`, `prepare_ad_from_creative_report`).
+- QC holds: a take that fails voice, continuity, product-fidelity, physics or direction QC is retaken once automatically; if it still fails, only that shot is held with a named reason, and the customer chooses to retake it (`revise_ad_shot`) or keep it (`accept_ad_held_take`).
+- Chat attachments are not forwarded to Ruliad. Import an image or a product page by URL (`import_ad_reference`, `import_product_from_url`), send a small local file as `data_base64` in Claude Code, or add it in the Ruliad project and register it. See the skill for details.
+- Shared detail for every assistant (the live tool list, Creative IQ, QC holds, review links, Vibe): `docs/ruliad-mcp-assistant-reference.md` in this repository.
 
 ## Public distribution
 
-- **Claude Code**: this repository is the public marketplace. Users run `claude plugin marketplace add spotrunner1/ruliad-claude-plugin` followed by `claude plugin install ruliad@ruliad`. The source of truth is `plugins/ruliad-claude` in the private Ruliad repository; copy it here on each release and tag it.
+- **Claude Code**: publish this `plugins/ruliad-claude` directory (or a copy) as a public GitHub repository and users can run `claude plugin marketplace add <owner>/<repo>` followed by `claude plugin install ruliad@ruliad`.
 - **Anthropic directory**: submissions go through claude.ai/directory/manage (plugin bundle and MCP connector). Review the current connector review criteria before submitting; at the time of writing they exclude connectors whose purpose is generating video, so expect the connector listing to be declined or scoped.
-- Nothing in this repository changes or republishes the ChatGPT plugin package.
+- Nothing in this directory changes or republishes the ChatGPT plugin package in `plugins/ruliad`.
