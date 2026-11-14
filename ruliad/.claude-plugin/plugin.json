@@ -1,13 +1,13 @@
 {
   "name": "ruliad",
-  "version": "0.3.1",
+  "version": "0.3.5",
   "description": "End-to-end TV ad production with Claude. Create, revise, edit and export commercials in an editable Ruliad production through the Ruliad MCP connection, or operate the Ruliad app through a browser Claude controls.",
   "author": {
     "name": "SpotRunner",
     "url": "https://theruliad.ai"
   },
   "homepage": "https://theruliad.ai",
-  "repository": "https://github.com/spotrunner1/ruliad-claude-plugin",
+  "repository": "https://github.com/spotrunner1/Ruliad",
   "keywords": [
     "television",
     "ctv",
